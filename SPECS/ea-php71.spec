@@ -151,7 +151,7 @@ Vendor:   cPanel, Inc.
 Name:     %{?scl_prefix}php
 Version:  7.1.33
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4588 for more details
-%define release_prefix 18
+%define release_prefix 19
 Release:  %{release_prefix}%{?dist}.cpanel
 # All files licensed under PHP version 3.01, except
 # Zend is licensed under Zend
@@ -199,6 +199,7 @@ Patch404: 0014-php-7.0.0-oldpcre.centos.patch
 Patch405: 0015-Update-libxml-include-file-references.patch
 
 Patch015: 0015-libxml2-2.13-makes-changes-to-how-the-parsing-state-.patch
+Patch016: 0016-Fix-libxml2-v2.15.0-compatibility.patch
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
@@ -1019,6 +1020,7 @@ inside them.
 %patch405 -p1 -b .libxml
 
 %patch015 -p1 -b .libxml2
+%patch016 -p1 -b .libxml2
 
 # Prevent %%doc confusion over LICENSE files
 cp Zend/LICENSE Zend/ZEND_LICENSE
@@ -1185,6 +1187,11 @@ mkdir Zend && cp ../Zend/zend_{language,ini}_{parser,scanner}.[ch] Zend
 # zlib: used by image
 
 export LDFLAGS="-Wl,-rpath=/opt/cpanel/ea-brotli/lib"
+
+export LDFLAGS="$LDFLAGS \
+    -Wl,--enable-new-dtags \
+    -Wl,-rpath,/opt/cpanel/ea-libxml2/lib \
+    -Wl,-rpath,/opt/cpanel/ea-libxml2/lib64"
 
 ln -sf ../configure
 %configure \
@@ -1886,6 +1893,9 @@ fi
 
 
 %changelog
+* Tue Oct 14 2025 Chris Castillo <chris.castillo@webpros.com> - 7.1.33-19
+- EA4-136: Fix libxml2 v2.15.0 compatibility
+
 * Fri Sep 13 2024 Julian Brown <julian.brown@cpanel.net> - 7.1.33-18
 - ZC-12167: Correct libxml2 problem
 
